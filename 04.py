@@ -17,20 +17,32 @@ class Board():
 
         if not all(map(len, self.rows + self.cols)): # override len=0 ~ False
                 sum_left = sum([sum(row) for row in self.rows])
-                print("%d (%d, %d)" %(sum_left*num, num, sum_left))
-                exit(0)
+                return sum_left*num
+        else:
+                return None
 
 if __name__ == "__main__":
     import sys
-    boards = []
+    boards = set()
     with open(sys.argv[1], "r") as f:
         lines = f.readlines()
         draw = lines.pop(0)
         while lines:
             lines.pop(0) # blank
-            boards.append(Board([lines.pop(0) for i in range(5)]))
+            boards.add(Board([lines.pop(0) for i in range(5)]))
+    first_found = False
     for ball in draw.split(","):
         ball = int(ball)
-        for board in boards: board.call(ball)
+        boards_to_delete = set()
+        for board in boards:
+            if (result := board.call(ball)) is not None:
+                if not first_found:
+                    print(result)
+                    first_found = True
+                boards_to_delete.add(board)
+                if boards_to_delete == boards: # Last one
+                    print(result)
+                    exit(0)
+        boards -= boards_to_delete
 
     print("No result")
