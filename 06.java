@@ -1,4 +1,4 @@
-public class Day06 {
+class Day06 {
     public static void main(String[] args) {
 	final int end = Integer.parseInt(args[0]);
 	String test = "3,4,3,1,2";
