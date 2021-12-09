@@ -46,12 +46,10 @@ foreach ($w6a, $w6b, $w6c) {
 	my $x_1 = $_    =~ s/[$num1]//gr;
 	#print "x_1 $x_1 _ $_\n";
 	if ($x51 eq $x_1) {
+		#print "$_ is nine\n";
                 $num9 = $_;
-	#} elsif (length $w2 =~ s/[$_]//gr == 0) {
-        } elsif (length $num1 =~ s/[$_]//gr == 0) {
+	} elsif (length $num1 =~ s/[$_]//gr == 1) {
 		$num6 = $_;
-		#} elsif ($x51 eq $x_1) {
-		#$num9 = $_;
 	} else {
 		$num0 = $_;
 	}
@@ -71,7 +69,7 @@ my $in_test = "acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab";
 my $out_test = "cdfeb fcadb cdfeb cdbaf";
 print solve_row($in_test, $out_test), "\n";
 
-my $file = "08.test";
+my $file = "08.dat";
 open(my $in,  "<",  $file)  or die "Can't open $file: $!";
 my $total = 0;
 while (<$in>) {
