@@ -24,7 +24,7 @@ if sys.argv:
 else:
     inputs = ""
 
-tape = [0] * 10000  # Lazy (but prog will crash if this isn't sufficient, fail-fast FTW)
+tape = [0] * 1000  # Lazy (but prog will crash if this isn't sufficient, fail-fast FTW)
 
 dp = 0
 ip = 0
@@ -32,6 +32,7 @@ stack = []
 out = []
 
 while ip < len(prog):
+  try:
     cmd = prog[ip]
     if cmd == '>': dp += 1
     elif cmd == '<': dp -= 1
@@ -60,6 +61,11 @@ while ip < len(prog):
         pass
 
     ip += 1
+  except Exception as e:
+      print("Error at this point in program:")
+      print(ip)
+      print(prog[ip-20:ip+1])
+      raise e
 
-print(out)
-print("".join([chr(x) for x in out]))
+print(" ".join([str(x) for x in out]))
+#print("".join([chr(x) for x in out]))

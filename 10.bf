@@ -150,7 +150,41 @@
    , read: loop unless next char is blank (null byte or EOF) a0000 0m s y*
 ]
 <[<] Go back to marker cell a0000 0m* s1 s2 s3
-Now print the result: counts of each val
+[ Debug only: Now print the result: counts of each val
 <<< <<<.>.>.>.>.>.
-[-] +++++ +++++ +++++ +++++ +++++ +++++ ++ .
->.>.>.>.>.
+> aaaaaa 0* ]
+And let's calculate the part one answer then:
+cp: 3 points
+cs: 57 points
+cb: 1197 points
+ca: 25137 points
+We have memory:
+| inv | inc | cp | ca | cs | cb | 0*
+<<<< [ - >>>> +++ <<<< ] >>>>  Add cp=3 to m cp times
+
+<< [ - >>  xxxxXx Am* a
+     > +++++ +++++  Am 10*
+     [ - < +++++ > ]  A plus 50m 0*
+     < +++++ ++  A plus 57m* 0
+    <<] >>          This has added cs=57 to m cs times
+xxxxxx m* 0
+
+< [ - >  xxxxxX m* a b
+    1197 is 12*10*10 take 3
+    > +++++ +++++  m 10* b
+    [ - > +++++ +++++ m 9 10*
+      [- << +++++ +++++ ++ >>] m X 0*
+    <] m 0* 0
+    < ---
+  <] >
+
+25137 is 27*30*31 plus 27 !
+<<< [ - >>> xxxXxx m* a b
+      >        +++++ +++++  +++++ +++++  +++++ ++       m A* b
+      [ - >    +++++ +++++  +++++ +++++  +++++ +++++    m A B*
+        [ - << +++++ +++++  +++++ +++++  +++++ +++++ +  >> ] m A 0*
+      <] m 0* 0
+      < +++++ +++++  +++++ +++++  +++++ ++
+    <<<] >>>
+
+.
