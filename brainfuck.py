@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import sys
 
 def usage():
@@ -23,12 +24,12 @@ if sys.argv:
 else:
     inputs = ""
 
-tape = [0] * 10000
+tape = [0] * 10000  # Lazy (but prog will crash if this isn't sufficient, fail-fast FTW)
 
 dp = 0
 ip = 0
 stack = []
-out = ""
+out = []
 
 while ip < len(prog):
     cmd = prog[ip]
@@ -36,7 +37,7 @@ while ip < len(prog):
     elif cmd == '<': dp -= 1
     elif cmd == '+': tape[dp] += 1
     elif cmd == '-': tape[dp] -= 1
-    elif cmd == '.': out += chr(tape[dp])
+    elif cmd == '.': out.append(tape[dp])
     elif cmd == ',':
         if inputs:
             tape[dp] = inputs.pop(0)
@@ -61,4 +62,4 @@ while ip < len(prog):
     ip += 1
 
 print(out)
-
+print("".join([chr(x) for x in out]))
