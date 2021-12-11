@@ -23,21 +23,97 @@
    >+<  Set flag 000000 0m bbb x* 1f
    ----- ----- Take 10: nl
    [ Not nl
-     ----- ----- ----- ----- ----- ----- Take 30: total=40 = op
+     ----- -----  ----- -----  ----- ----- Take 30: total=40 = op
      [ Not op
        - Take 1: total=41 = cp
        [ Not cp
+         ----- -----  ----- ---- Take 19; total=60 = oa
+         [ Not oa
+           -- Take 2: total 62 = ca
+           [ Not ca
+             ----- -----  ----- -----  ----- ---- Take 29: total 91 = os
+             [ Not os
+               -- Take 2: total 93 = cs
+               [ Not cs
+                 ----- -----  ----- -----  ----- ----- Take 30: total 123 = ob
+                 [ Not ob
+                   -- Take 2: total 125 = cb
+                   [ Not cb
                      Unrecognised state; clear line and increment invalid flag; then read until next nl
                      >-< Unset flag
                      Clear value: first restore to original value to avoid underflow 
                      +++++ +++++  nl
-                     +++++ +++++ +++++ +++++ +++++ +++++ op
+                     +++++ +++++  +++++ +++++  +++++ +++++ op
                      + cp
+                     +++++ +++++  +++++ ++++ oa
+                     ++ ca
+                     +++++ +++++  +++++ +++++  +++++ ++++ os
                      [ [-] < ]  Running clear; stops on m : iaaaaa 0m* 000
                      <<< <<< + >>> >>> >  Increment invalid flag; go back to m; go to v : one before f
                      + [ , ----- ----- ]  Do==while
-       ]
-       >    aaaaa 0m bbb 0 f* 
+                   ]>
+                   [- = cb
+                     If p is ob: pop p ; else clear line and report corrupt cb
+                     + Keep using f as a flag
+                     << ---- bs=4 so take four from p
+                     [ p wasn't ob: corrupt : bbb p'* 0 1f
+                       >>- <<++++ Clear flag; replace previous p value
+                       [ [-] < ]  Running clear; stops on m : aaaaa 0m* 000
+                       <+>  aaaaa1 0m* 0 0f  m is equivalent to old p
+                       + [ , ----- ----- ] Do==while : read to end of line
+                     ] >>
+                     [ p was ob : clear flag and reset stack pointer; loop expects pointer to be at f
+                       -<
+                     ]
+                   ]<
+                 ]>
+                 [- = ob
+                   > ++++  Set s to 4=ob
+                   <
+                 ]<
+
+               ]>
+               [- = cs
+                 If p is os: pop p ; else clear line and report corrupt cs
+                 + Keep using f as a flag
+                 << --- os=3 so take three from p
+                 [ p wasn't os: corrupt : bbb p'* 0 1f
+                   >>- <<+++ Clear flag; replace previous p value
+                   [ [-] < ]  Running clear; stops on m : aaaaa 0m* 000
+                   <<+>>  aaaa1a 0m* 0 0f  m is equivalent to old p
+                   + [ , ----- ----- ] Do==while : read to end of line
+                 ] >>
+                 [ p was os : clear flag and reset stack pointer; loop expects pointer to be at f
+                   -<
+                 ]
+               ]<
+
+             ]>
+             [- = os
+               > +++  Set s to 3=os
+               <
+             ]<
+           ]>
+           [- = ca
+             If p is oa: pop p ; else clear line and report corrupt ca
+             + Keep using f as a flag: aaaaa 0m bbb p 0 1f*
+             << -- oa=2 so take two from p
+             [ p wasn't oa: corrupt : bbb p'* 0 1f
+               >>- <<++ Clear flag; replace previous p value
+               [ [-] < ]  Running clear; stops on m : aaaaa 0m* 000
+               <<<+>>>  aaa1aa 0m* 0 0f  m is equivalent to old p
+               + [ , ----- ----- ] Do==while : read to end of line
+             ] >> 
+             [ p was oa : p already zero so we just clear flag and reset stack pointer; loop expects pointer to be at f
+               -<
+             ]
+           ]<
+         ]>
+         [- =oa
+           > ++  Set s to 2=oa
+           <
+         ]<
+       ]>    aaaaa 0m bbb 0 f* 
        [- =cp    aaaaa 0m bbb p x0' 0f* 0
          If p is op: pop p ; else clear line and report corrupt cp
          + Keep using f as a flag: aaaaa 0m bbb p 0 1f*
@@ -46,19 +122,18 @@
            >>- <<+  Clear flag; replace previous p value
            [ [-] < ]  Running clear; stops on m : aaaaa 0m* 000
            <<<<+>>>>  aa1aaa 0m* 0 0f  m is equivalent to old p
+           + [ , ----- ----- ] Do==while : read to end of line
          ] >>  Either aa1aaa 0m 0 0f* or aaaaa 0m bbb 0p' 0 1f*
          [ p was op : p is already zero so we just clear flag and reset stack pointer; loop expects pointer to be at f
            -<
          ]
        ]<  aaaaa 0m bbb 0* 0 0f == aaaaa 0m bbb 0* 0f
-     ]
-     >
+     ]>
      [- =op aaaaa 0m x0' 0f* 0
        > +  Set s to 1=op
        <
      ]<
-   ]
-   > 000000 0m x=0 f* : x is 0 because either we cleared it or it was 0 already; f is 1 or 0
+   ]> 000000 0m x=0 f* : x is 0 because either we cleared it or it was 0 already; f is 1 or 0
    [- =nl: Check flag and then unset it; end block on flag location 000000 0m 0 0f*
      For newlines we are going to clear the line so don't use the store
      If the stack is not empty: then line is incomplete and we should increment the incomplete counter
