@@ -11,3 +11,4 @@ A series of hacky solutions to this year's Advent of Code (https://adventofcode.
 - Day 08 - `./08.pl` (assumes `perl` exists in path)
 - Day 09 - `python 09.py` - nothing fancy today
 - Day 10 - `./brainfuck.py 10.bf 10.dat` - Part one only - Slow (~5 seconds).  For part two see `day10/`
+- Day 11 - `./11.py 11.dat 100`
