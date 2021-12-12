@@ -148,30 +148,15 @@
        Stack is 000000 0m sN :: s2 s1* 0=score 0
        For each s in stack: multiply score so far by 5; then add to s; we already store the correct value in s
 
-[ New attempt; as soon as the score is largish the biggest factor by far is the *5
-  So: calculate the first few; then output that value; followed by a count of how many remain
-  Rough final value is first_val * 5**rem_count
-  >[-<+++++>]<<  1
-  >[-<+++++>]<<  2
-  >[-<+++++>]<<  3
-  >[-<+++++>]<<  4
-  >[-<+++++>]<<  5
-  >[-<+++++>]<<  6
-  >.[-] <  Now we're at m0 sN::s6* 0
-  [ .[-] <]  Print each remaining one: we need the vals to calc out of band; finish at m0*
-  . Print 0 as separator
-]
-
-[ debug : this should be correct for part two but it's getting stuck
+       Part two: warning! runs extremely slow unless using an optimized BF interpreter
+       Requires optimization of set_zero and mult_and_add commands
        [ >  sN::s1 score*
          [ - < +++++ > ] sN::s1_plus_5score 0*
        << sN::s2* new_score
        ] until m0* total_score
        > . [-] < output the score; drain it to 0; go back to m0*
-]
 
-       Legacy part one: this won't do anything as we've ended at 0m*:
-       [ [-] <] Run back to first empty cell: marker cell #7; clear cells as we go 000000 0m* 0 0f
+       Legacy part one: no longer required; just keeps count of incomplete lines
        <<< << + >>> >> Increment counter in cell 2 then move back to stack: cell 7; 010000 0m* 0 0f
      ]
      >> Move back to flag location: which is now near the start of the stack 010000 0m 0 0f*
