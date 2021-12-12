@@ -11,6 +11,11 @@
  'stack' tracks openings. op=1 oa=2 os=3 ob=4 so op op oa ob os would be 11243 0...
  'invalid count' is states that should never happen
 
+ In part b, we score each one as follows:
+ cp : 1 point
+ cs : 2 points
+ cb : 3 points
+ ca : 4 points
 ]
 
 >>> >>> > Skip past the count stores in cells 1::6 and marker cell 7
@@ -55,9 +60,9 @@
                    [- = cb
                      If p is ob: pop p ; else clear line and report corrupt cb
                      + Keep using f as a flag
-                     << ---- bs=4 so take four from p
+                     << --- ob=3 so take three from p
                      [ p wasn't ob: corrupt : bbb p'* 0 1f
-                       >>- <<++++ Clear flag; replace previous p value
+                       >>- <<+++ Clear flag; replace previous p value
                        [ [-] < ]  Running clear; stops on m : aaaaa 0m* 000
                        <+>  aaaaa1 0m* 0 0f  m is equivalent to old p
                        + [ , ----- ----- ] Do==while : read to end of line
@@ -68,7 +73,7 @@
                    ]<
                  ]>
                  [- = ob
-                   > ++++  Set s to 4=ob
+                   > +++  Set s to 3=ob
                    <
                  ]<
 
@@ -76,9 +81,9 @@
                [- = cs
                  If p is os: pop p ; else clear line and report corrupt cs
                  + Keep using f as a flag
-                 << --- os=3 so take three from p
+                 << -- os=2 so take two from p
                  [ p wasn't os: corrupt : bbb p'* 0 1f
-                   >>- <<+++ Clear flag; replace previous p value
+                   >>- <<++ Clear flag; replace previous p value
                    [ [-] < ]  Running clear; stops on m : aaaaa 0m* 000
                    <<+>>  aaaa1a 0m* 0 0f  m is equivalent to old p
                    + [ , ----- ----- ] Do==while : read to end of line
@@ -90,16 +95,16 @@
 
              ]>
              [- = os
-               > +++  Set s to 3=os
+               > ++  Set s to 2=os
                <
              ]<
            ]>
            [- = ca
              If p is oa: pop p ; else clear line and report corrupt ca
              + Keep using f as a flag: aaaaa 0m bbb p 0 1f*
-             << -- oa=2 so take two from p
+             << ---- oa=4 so take four from p
              [ p wasn't oa: corrupt : bbb p'* 0 1f
-               >>- <<++ Clear flag; replace previous p value
+               >>- <<++++ Clear flag; replace previous p value
                [ [-] < ]  Running clear; stops on m : aaaaa 0m* 000
                <<<+>>>  aaa1aa 0m* 0 0f  m is equivalent to old p
                + [ , ----- ----- ] Do==while : read to end of line
@@ -110,7 +115,7 @@
            ]<
          ]>
          [- =oa
-           > ++  Set s to 2=oa
+           > ++++  Set s to 4=oa
            <
          ]<
        ]>    aaaaa 0m bbb 0 f* 

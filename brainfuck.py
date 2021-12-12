@@ -61,7 +61,7 @@ while ip < len(prog):
         pass
 
     ip += 1
-  except Exception as e:
+  except BaseException as e:
       print("Error at this point in program:")
       print(ip)
       print(prog[ip-20:ip+1])
