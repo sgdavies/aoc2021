@@ -13,3 +13,4 @@ A series of hacky solutions to this year's Advent of Code (https://adventofcode.
 - Day 10 - `./brainfuck.py 10.bf 10.dat` - Part one only - Slow (~5 seconds).  For part two see `day10/`
 - Day 11 - `./11.py 11.dat 100`
 - Day 12 - `./12.py` - It's a bit slow for part 2 (~10 seconds)
+- Day 13 - `./13.py` - Possible improvements: add OCR?
