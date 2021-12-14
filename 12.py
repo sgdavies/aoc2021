@@ -40,33 +40,25 @@ for line in descr.split("\n"):
         if all([c.islower() for c in node]):
             smalls.add(node)
 
-def explore(node, visited):
+def explore(node, visited, special):
     if node == "end": return 1
 
     my_visited = visited.copy()
     routes = 0
     if node in smalls: my_visited.add(node)
-    for other in filter(lambda x: x not in my_visited, cave[node]):
-        routes += explore(other, my_visited)
 
-    return routes
-
-def explore_two(node, visited):
-    if node == "end":
-        return 1
-
-    my_visited = visited.copy()
-    routes = 0
-    if node in smalls:
-        my_visited[node] += 1
-        if my_visited[node] > 2: return 0
-    for other in sorted(cave[node]):
+    for other in cave[node]:
         if not other in my_visited:
-            routes += explore_two(other, my_visited)
-        elif other != "start" and len(list(filter(lambda x: x==2, my_visited.values()))) <= 1:
-            routes += explore_two(other, my_visited)
+            routes += explore(other, my_visited, special)
+        elif special is not None and not special and other != "start" and other in smalls:
+            routes += explore(other, my_visited, True)
 
     return routes
 
-print(explore("start", set()))
-print(explore_two("start", dict.fromkeys(smalls, 0)))
+def run():
+    print(explore("start", set(), None))
+    print(explore("start", set(), False))
+
+#import cProfile
+#cProfile.run('run()')
+run()
