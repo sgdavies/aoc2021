@@ -14,3 +14,4 @@ A series of hacky solutions to this year's Advent of Code (https://adventofcode.
 - Day 11 - `./11.py 11.dat 100`
 - Day 12 - `./12.py`
 - Day 13 - `./13.py` - now with improved OCR! (requires extra python libraries)
+- Day 14 - `./14.py`
