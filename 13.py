@@ -42,9 +42,9 @@ try:
     # - scale up
     # - ensure there's a top and left border
     # - smooth pixel-pixel boundaries on diagonal lines:
-    #      ***      ***
-    #      *** =>  #***
-    #   ***       ***#
+    #      ***       ***
+    #      ***  =>  ****
+    #   ***       ****
     #   ***       ***
     scale = 5
     sizex = scale*(x+2) # x,y still at max values from folding process above; +2 for borders
