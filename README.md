@@ -18,3 +18,5 @@ A series of hacky solutions to this year's Advent of Code (https://adventofcode.
 | Day 13 | `./13.py` | Now with improved OCR! (requires extra python libraries) |
 | Day 14 | `./14.py <input> <steps>` | Correctly suspected part two, and went for an efficient implementation first time 😺|
 | Day 15 | `./15.py <input>` | Not efficient - and slower for part two (~48s) |
+| Day 16 | | |
+| Day 17 | `./17.py` | python |

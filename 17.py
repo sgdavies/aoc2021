@@ -13,18 +13,30 @@ YMAX = -46
 
 s = 1
 while True:
-    if s*(s+1)//2 > XMIN:
+    if s*(s+1)//2 >= XMIN:
         vx_min = s
         break
     s += 1
 
-y_max = 1-YMIN
+vy_max = 1-YMIN
 hits = 0
-for vx in range(vx_min, XMAX+1):
-    for vy in range(YMIN, y_max):
+max_vy = 0
+for ovx in range(vx_min, XMAX+1):
+    for ovy in range(YMIN, vy_max):
         x=0;y=0
+        vx=ovx;vy=ovy
         step = 1
-        skip = False
-        while not skip:
-            #
+        while True:
+            x += vx
+            y += vy
+            if x>XMAX or y<YMIN:
+                break
+            if vx>0: vx -= 1
+            vy -= 1
+            if x>= XMIN and y <= YMAX:
+                hits += 1
+                if ovy>max_vy: max_vy = ovy
+                break
             step += 1
+
+print(max_vy*(max_vy+1)//2, hits)
