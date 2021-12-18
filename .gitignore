@@ -1,3 +1,4 @@
 *.out
 *.class
 13.bmp
+day18/target/*
