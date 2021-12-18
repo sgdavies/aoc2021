@@ -6,6 +6,15 @@ enum Element {
     Snailfish(Snailfish)
 }
 
+impl Element {
+    fn value(&self) -> u32 {
+        match self {
+            Element::Regular(val) => *val as u32,
+            Element::Snailfish(snail) => snail.magnitude(),
+        }
+    }
+}
+
 #[derive(Debug)]
 struct Snailfish {
     left: Box<Element>,
@@ -101,6 +110,10 @@ impl Snailfish {
     fn split(&self) -> Option<()> {
         None
     }
+
+    fn magnitude(&self) -> u32 {
+        3 * self.left.value() + 2 * self.right.value()
+    }
 }
 
 impl fmt::Display for Snailfish {
@@ -131,4 +144,20 @@ fn main() {
     println!("{}", snail_one);
     snail_one.reduce();
     println!("{}", snail_one);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_magnitue() {
+        assert_eq!(Snailfish::parse_str(&"[0,0]").magnitude(), 0);
+        assert_eq!(Snailfish::parse_str(&"[[1,2],[[3,4],5]]").magnitude(), 143);
+        assert_eq!(Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[6,0]]],[8,1]]").magnitude(), 1384);
+        assert_eq!(Snailfish::parse_str(&"[[[[1,1],[2,2]],[3,3]],[4,4]]").magnitude(), 445);
+        assert_eq!(Snailfish::parse_str(&"[[[[3,0],[5,3]],[4,4]],[5,5]]").magnitude(), 791);
+        assert_eq!(Snailfish::parse_str(&"[[[[5,0],[7,4]],[5,5]],[6,6]]").magnitude(), 1137);
+        assert_eq!(Snailfish::parse_str(&"[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]").magnitude(), 3488);
+    }
 }
