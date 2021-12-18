@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Debug)]
 enum Element {
     Regular(u8),
@@ -26,7 +28,6 @@ impl Snailfish {
             assert!(false);
         }
         let s = &s[1..];
-println!("parse left: {}", s);
         let (left, l_consumed) = match &s[..1] {
             "[" => {
                 let (snail, len) = Snailfish::parse_sub_str(&s[..]);
@@ -42,7 +43,6 @@ println!("parse left: {}", s);
         let s = &s[l_consumed..];
         assert!(s.starts_with(','));
         let s = &s[1..];
-println!("parse right: {}", s);
         let (right, r_consumed) = match &s[..1] {
             "[" => {
                 let (snail, len) = Snailfish::parse_sub_str(&s[..]);
@@ -60,13 +60,32 @@ println!("parse right: {}", s);
          l_consumed + r_consumed + 3)
     }
     
+    fn add(left: Snailfish, right: Snailfish) -> Snailfish {
+        Snailfish { left: Box::new(Element::Snailfish(left)), right: Box::new(Element::Snailfish(right)) }
+    }
+}
+
+impl fmt::Display for Snailfish {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "[{},{}]", self.left, self.right)
+    }
+}
+
+impl fmt::Display for Element {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Element::Snailfish(snail) => write!(f, "{}", snail),
+            Element::Regular(val) => write!(f, "{}", val),
+        }
+    }
 }
 
 fn main() {
     println!("Hello, world!");
-    println!("{:?}", Snailfish::parse_str(&"[1,2]"));
-    println!("{:?}", Snailfish::parse_str(&"[[3,4],2]"));
-    println!("{:?}", Snailfish::parse_str(&"[1,[5,6]]"));
-    println!("{:?}", Snailfish::parse_str(&"[[[[1,3],[5,3]],[[1,3],[8,7]]],[[[4,9],[6,9]],[[8,2],[7,3]]]]"));
-    // println!("{:?}", Snailfish::parse_str(&"1,2]"));
+    println!("{}", Snailfish::parse_str(&"[1,2]"));
+    println!("{}", Snailfish::parse_str(&"[[3,4],2]"));
+    println!("{}", Snailfish::parse_str(&"[1,[5,6]]"));
+    println!("{}", Snailfish::parse_str(&"[[[[1,3],[5,3]],[[1,3],[8,7]]],[[[4,9],[6,9]],[[8,2],[7,3]]]]"));
+    // println!("{}", Snailfish::parse_str(&"1,2]"));
+    println!("{}", Snailfish::add(Snailfish::parse_str(&"[1,2]"), Snailfish::parse_str(&"[[3,4],5]")));
 }
