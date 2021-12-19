@@ -41,18 +41,17 @@ impl Snailfish {
     fn parse_sub_str(s: &str) -> (Snailfish, usize) {
         // Expect slice of form "[left,right]..."
         // Returns a snailfish and number of chars consumed
-        if !s.starts_with("[") {
-            println!("Bad string: {}", s);
-            assert!(false);
+        if !s.starts_with('[') {
+            panic!("Bad string: {}", s);
         }
         let s = &s[1..];
         let (left, l_consumed) = match &s[..1] {
             "[" => {
-                let (snail, len) = Snailfish::parse_sub_str(&s[..]);
+                let (snail, len) = Snailfish::parse_sub_str(s);
                 (Element::Snailfish(snail), len)
             },
             _   => {
-                let comma = s.find(",").unwrap();
+                let comma = s.find(',').unwrap();
                 let value = s[..comma].parse::<u8>().unwrap();
                 (Element::Regular(value), comma)
             }
@@ -63,11 +62,11 @@ impl Snailfish {
         let s = &s[1..];
         let (right, r_consumed) = match &s[..1] {
             "[" => {
-                let (snail, len) = Snailfish::parse_sub_str(&s[..]);
+                let (snail, len) = Snailfish::parse_sub_str(s);
                 (Element::Snailfish(snail), len)
             },
             _   => {
-                let end_bracket = s.find("]").unwrap();
+                let end_bracket = s.find(']').unwrap();
                 let value = s[..end_bracket].parse::<u8>().unwrap();
                 (Element::Regular(value), end_bracket)
             }
@@ -91,12 +90,7 @@ impl Snailfish {
 
     fn reduce(&mut self) {
         loop {
-            if let Some(_explode) = self.explode(1) {
-                //
-            } else if self.split() {
-                //
-            } else {
-                // no more reducing to do
+            if self.explode(1).is_none() && !self.split() {
                 return;
             }
         }
@@ -110,9 +104,8 @@ impl Snailfish {
         // if left is reg - do right; if left is snail - try explode, otherwise do right
 
         // Don't call explode on a snail with no snails (easier for parent to handle, as they need to swap that snail for 0)
-        match (&*self.left, &*self.right) {
-            (Element::Regular(_), Element::Regular(_)) =>  { assert!(false, "Parent should have handled this"); },
-            _ => (),
+        if let (Element::Regular(_), Element::Regular(_)) = (&*self.left, &*self.right) {
+            panic!("Parent should have handled this");
         }
 
         let l_explode = match &mut *self.left {
@@ -244,7 +237,7 @@ impl Snailfish {
                     Element::Snailfish(snail) => snail.add_explode_val(LR::Right(val)),
                 }
             },
-            LR::Neither => assert!(false, "Don't pass neither to this function!"),
+            LR::Neither => panic!("Don't pass neither to this function!"),
         }
     }
 
