@@ -1,8 +1,9 @@
 use std::fmt;
 
 const DEPTH: u8 = 4;
+const SPLIT: u8 = 10;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 enum Element {
     Regular(u8),
     Snailfish(Snailfish)
@@ -23,7 +24,7 @@ enum LR {
     Neither,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 struct Snailfish {
     left: Box<Element>,
     right: Box<Element>
@@ -86,7 +87,7 @@ impl Snailfish {
         loop {
             if let Some(_explode) = self.explode(1) {
                 //
-            } else if let Some(_split) = self.split() {
+            } else if self.split() {
                 //
             } else {
                 // no more reducing to do
@@ -222,12 +223,70 @@ impl Snailfish {
         }
     }
 
-    fn add_explode_val(&mut self, _lr: LR) {
-        // TODO
+    fn add_explode_val(&mut self, lr: LR) {
+        // Go down and L/R until finding a Regular val to add to
+        match lr {
+            LR::Left(val) => {
+                match &mut *self.left {
+                    Element::Regular(x) => self.left = Box::new(Element::Regular(*x+val)),
+                    Element::Snailfish(snail) => snail.add_explode_val(LR::Left(val)),
+                }
+            },
+            LR::Right(val) => {
+                match &mut *self.right {
+                    Element::Regular(x) => self.right = Box::new(Element::Regular(*x+val)),
+                    Element::Snailfish(snail) => snail.add_explode_val(LR::Right(val)),
+                }
+            },
+            LR::Neither => assert!(false, "Don't pass neither to this function!"),
+        }
     }
 
-    fn split(&self) -> Option<()> {
-        None
+    fn split(&mut self) -> bool {
+        // Find the first element from the left which is greater than SPLIT and split it; return True if a split occured
+        let l_split = match &mut *self.left {
+            Element::Regular(val) => {
+                let val = *val;
+                if val >= SPLIT {
+                    let lval = val / 2;
+                    let snail = Snailfish {
+                        left: Box::new(Element::Regular(lval)),
+                        right: Box::new(Element::Regular(val - lval))
+                    };
+                    self.left = Box::new(Element::Snailfish(snail));
+                    true
+                } else {
+                    false
+                }
+            },
+            Element::Snailfish(snail) => {
+                snail.split()
+            }
+        };
+
+        if l_split {
+            l_split
+        } else {
+            match &mut *self.right {
+                Element::Regular(val) => {
+                    let val = *val;
+                    if val >= SPLIT {
+                        let lval = val / 2;
+                        let snail = Snailfish {
+                            left: Box::new(Element::Regular(lval)),
+                            right: Box::new(Element::Regular(val - lval))
+                        };
+                        self.right = Box::new(Element::Snailfish(snail));
+                        true
+                    } else {
+                        false
+                    }
+                },
+                Element::Snailfish(snail) => {
+                    snail.split()
+                }
+            }
+        }
     }
 
     fn magnitude(&self) -> u32 {
@@ -252,9 +311,6 @@ impl fmt::Display for Element {
 
 fn main() {
     println!("Hello, world!");
-    println!("{}", Snailfish::parse_str(&"[1,2]"));
-    println!("{}", Snailfish::parse_str(&"[[3,4],2]"));
-    println!("{}", Snailfish::parse_str(&"[1,[5,6]]"));
     println!("{}", Snailfish::parse_str(&"[[[[1,3],[5,3]],[[1,3],[8,7]]],[[[4,9],[6,9]],[[8,2],[7,3]]]]"));
     let mut snail_one = Snailfish::parse_str(&"[1,2]");
     snail_one.add(Snailfish::parse_str(&"[[3,4],5]"));
@@ -286,5 +342,31 @@ mod tests {
         assert_eq!(Snailfish::parse_str(&"[[[[3,0],[5,3]],[4,4]],[5,5]]").magnitude(), 791);
         assert_eq!(Snailfish::parse_str(&"[[[[5,0],[7,4]],[5,5]],[6,6]]").magnitude(), 1137);
         assert_eq!(Snailfish::parse_str(&"[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]").magnitude(), 3488);
+    }
+
+    #[test]
+    fn test_explode() {
+        let mut snail = Snailfish::parse_str(&"[[[[[9,8],1],2],3],4]");
+        snail.explode(1);
+        assert_eq!(snail, Snailfish::parse_str(&"[[[[0,9],2],3],4]"));
+
+        let mut snail = Snailfish::parse_str(&"[7,[6,[5,[4,[3,2]]]]]");
+        snail.explode(1);
+        assert_eq!(snail, Snailfish::parse_str(&"[7,[6,[5,[7,0]]]]"));
+
+        let mut snail = Snailfish::parse_str(&"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]");
+        snail.explode(1);
+        assert_eq!(snail, Snailfish::parse_str(&"[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"));
+        snail.explode(1);
+        assert_eq!(snail, Snailfish::parse_str(&"[[3,[2,[8,0]]],[9,[5,[7,0]]]]"));
+    }
+
+    #[test]
+    fn test_split() {
+        let mut snail = Snailfish::parse_str(&"[[[[0,7],4],[15,[0,13]]],[1,1]]");
+        snail.split();
+        assert_eq!(snail, Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[0,13]]],[1,1]]"));
+        snail.split();
+        assert_eq!(snail, Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]"));
     }
 }
