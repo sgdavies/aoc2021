@@ -20,3 +20,4 @@ A series of hacky solutions to this year's Advent of Code (https://adventofcode.
 | Day 15 | `./15.py <input>` | Not efficient - and slower for part two (~48s) |
 | Day 16 | | |
 | Day 17 | `./17.py` | python |
+| Day 18 | `cd day 18; cargo run` | Rust |
