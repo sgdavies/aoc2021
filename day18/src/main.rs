@@ -78,9 +78,10 @@ impl Snailfish {
          l_consumed + r_consumed + 3)
     }
 
-    fn add_and_reduce(&mut self, other: Snailfish) {
+    fn add_and_reduce(&mut self, other: Snailfish) -> &mut Snailfish {
         self.add(other);
         self.reduce();
+        self
     }
     
     fn add(&mut self, other: Snailfish) {
@@ -315,31 +316,26 @@ impl fmt::Display for Element {
 }
 
 fn main() {
-    // println!("Hello, world!");
-    // println!("{}", Snailfish::parse_str(&"[[[[1,3],[5,3]],[[1,3],[8,7]]],[[[4,9],[6,9]],[[8,2],[7,3]]]]"));
-    // let mut snail_one = Snailfish::parse_str(&"[1,2]");
-    // snail_one.add(Snailfish::parse_str(&"[[3,4],5]"));
-    // println!("{}", snail_one);
-    // snail_one.reduce();
-    // println!("{}", snail_one);
-
-    // // explodes
-    // let mut snail = Snailfish::parse_str(&"[[[[[9,8],1],2],3],4]");
-    // snail.explode(1);
-    // println!("{}", snail);
-    // let mut snail = Snailfish::parse_str(&"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]");
-    // snail.explode(1);
-    // println!("{}", snail);
-    // snail.explode(1);
-    // println!("{}", snail);
-
     let input = std::fs::read_to_string("18.dat").unwrap();
     let mut lines = input.lines();
     let mut snailfish = Snailfish::parse_str(lines.next().unwrap());
+    let mut all_fish = vec![snailfish.clone()];
     for line in lines {
-        snailfish.add_and_reduce(Snailfish::parse_str(line));
+        let new_fish = Snailfish::parse_str(line);
+        all_fish.push(new_fish.clone());
+        snailfish.add_and_reduce(new_fish);
     }
     println!("{}", snailfish.magnitude());
+
+    let mut max = 0;
+    for i in 0..all_fish.len() {
+        for j in 0..all_fish.len() {
+            if i==j { continue; }
+            let mag = all_fish[i].clone().add_and_reduce(all_fish[j].clone()).magnitude();
+            if mag > max { max = mag; }
+        }
+    }
+    println!("{}", max);
 }
 
 #[cfg(test)]
@@ -389,5 +385,8 @@ mod tests {
         let other = Snailfish::parse_str(&"[1,1]");
         snail.add_and_reduce(other);
         assert_eq!(snail, Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"));
+        
+        assert_eq!(Snailfish::parse_str(&"[[[[4,3],4],4],[7,[[8,4],9]]]").add_and_reduce(Snailfish::parse_str(&"[1,1]")),
+               &Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"));
     }
 }
