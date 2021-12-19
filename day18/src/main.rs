@@ -1,6 +1,8 @@
 use std::fmt;
 
-#[derive(Debug)]
+const DEPTH: u8 = 4;
+
+#[derive(Clone, Debug)]
 enum Element {
     Regular(u8),
     Snailfish(Snailfish)
@@ -15,7 +17,13 @@ impl Element {
     }
 }
 
-#[derive(Debug)]
+enum LR {
+    Left(u8),
+    Right(u8),
+    Neither,
+}
+
+#[derive(Clone, Debug)]
 struct Snailfish {
     left: Box<Element>,
     right: Box<Element>
@@ -69,13 +77,14 @@ impl Snailfish {
          l_consumed + r_consumed + 3)
     }
     
-    fn add(left: Snailfish, right: Snailfish) -> Snailfish {
-        Snailfish { left: Box::new(Element::Snailfish(left)), right: Box::new(Element::Snailfish(right)) }
+    fn add(&mut self, other: Snailfish) {
+        self.left = Box::new(Element::Snailfish(self.clone()));
+        self.right = Box::new(Element::Snailfish(other));
     }
 
     fn reduce(&mut self) {
         loop {
-            if let Some(_explode) = self.explode() {
+            if let Some(_explode) = self.explode(1) {
                 //
             } else if let Some(_split) = self.split() {
                 //
@@ -86,25 +95,135 @@ impl Snailfish {
         }
     }
 
-    fn explode(&mut self) -> Option<()> {
-        if let Some(e_left) = Snailfish::explode_element(&*self.left, 1) {
-            self.left = Box::new(e_left);
-            Some(())
-        } else if let Some(e_right) = Snailfish::explode_element(&*self.right, 1) {
-            self.right = Box::new(e_right);
-            Some(())
-        } else {
-            None
+    fn explode(&mut self, depth: u8) -> Option<LR> {
+        // DFS to find first element that needs exploding; explode it or return None
+        // When traversing back, we may be passed an exploded value which needs adding left or right - handle that.
+        // When .left explodes, the r-value b can always be immediately passed down to x [...[[a,b],x]...]
+        // The l-value a must be passed back and absorbed by the parent.  Similarly for .right.
+        // if left is reg - do right; if left is snail - try explode, otherwise do right
+
+        // Don't call explode on a snail with no snails (easier for parent to handle, as they need to swap that snail for 0)
+        match (&*self.left, &*self.right) {
+            (Element::Regular(_), Element::Regular(_)) =>  { assert!(false, "Parent should have handled this"); },
+            _ => (),
+        }
+
+        let l_explode = match &mut *self.left {
+            Element::Regular(_) => None,
+            Element::Snailfish(snail) => {
+                match (&*snail.left, &*snail.right) {
+                    (Element::Regular(lval), Element::Regular(rval)) => {
+                        if depth >= DEPTH {
+                            // Explode!
+                            // Close the borrows so we can reassign self.left
+                            let lval = *lval;
+                            let rval = *rval;
+                            self.left = Box::new(Element::Regular(0));
+                            match &mut *self.right {
+                                Element::Regular(x) => {
+                                    self.right = Box::new(Element::Regular(*x+rval));
+                                },
+                                Element::Snailfish(rsnail) => {
+                                    rsnail.add_explode_val(LR::Left(rval)); // Add the rval to the closest (leftmost) sub-element
+                                },
+                            };
+                            Some(LR::Left(lval))  // Parent needs to consume lval in closest on left (turn to R if passed down again)
+                        } else {
+                            None
+                        }
+                    },
+                    _ => {
+                        match snail.explode(depth+1) {
+                            None => None,
+                            Some(LR::Neither) => {
+                                // something exploded, but all values have already been handled
+                                Some(LR::Neither)
+                            },
+                            Some(LR::Left(lval)) => {
+                                // it exploded; we need to handle a val up-left and return Some
+                                // We're already in the L-branch so we must pass the val up again
+                                Some(LR::Left(lval))
+                            },
+                            Some(LR::Right(rval)) => {
+                                // add the val to our right element. this must always succeed, so we return Neither
+                                match &mut *self.right {
+                                    Element::Regular(x) => {
+                                        self.right = Box::new(Element::Regular(*x+rval));
+                                    },
+                                    Element::Snailfish(rsnail) => {
+                                        rsnail.add_explode_val(LR::Left(rval)); // Note it needs to be applied in closest (l-most element)
+                                    },
+                                }
+                                Some(LR::Neither)
+                            }
+                        }
+                    }
+                }
+            },
+        };
+
+        match l_explode {
+            Some(_) => l_explode,
+            None => {
+                match &mut *self.right {
+                    Element::Regular(_) => None,
+                    Element::Snailfish(snail) => {
+                        match (&*snail.left, &*snail.right) {
+                            (Element::Regular(lval), Element::Regular(rval)) => {
+                                if depth >= DEPTH {
+                                    // Explode!
+                                    // Close the borrows so we can reassign self.left
+                                    let lval = *lval;
+                                    let rval = *rval;
+                                    self.right = Box::new(Element::Regular(0));
+                                    match &mut *self.left {
+                                        Element::Regular(x) => {
+                                            self.left = Box::new(Element::Regular(*x+lval));
+                                        },
+                                        Element::Snailfish(lsnail) => {
+                                            lsnail.add_explode_val(LR::Right(lval)); // Add the rval to the closest (leftmost) sub-element
+                                        },
+                                    };
+                                    Some(LR::Right(rval))  // Parent needs to consume lval in closest on left (turn to R if passed down again)
+                                } else {
+                                    None
+                                }
+                            },
+                            _ => {
+                                match snail.explode(depth+1) {
+                                    None => None,
+                                    Some(LR::Neither) => {
+                                        // something exploded, but all values have already been handled
+                                        Some(LR::Neither)
+                                    },
+                                    Some(LR::Right(rval)) => {
+                                        // it exploded; we need to handle a val up-right and return Some
+                                        // We're already in the R-branch so we must pass the val up again
+                                        Some(LR::Right(rval))
+                                    },
+                                    Some(LR::Left(lval)) => {
+                                        // add the val to our left element. this must always succeed, so we return Neither
+                                        match &mut *self.left {
+                                            Element::Regular(x) => {
+                                                self.left = Box::new(Element::Regular(*x+lval));
+                                            },
+                                            Element::Snailfish(lsnail) => {
+                                                lsnail.add_explode_val(LR::Right(lval)); // Note it needs to be applied in closest (l-most element)
+                                            },
+                                        }
+                                        Some(LR::Neither)
+                                    }
+                                }
+                            }
+                        }
+                    },
+                }
+            }
         }
     }
 
-    fn explode_element(elem: &Element, _depth: u8) -> Option<Element> {
-        match elem {
-            Element::Snailfish(_snail) => {
-                Some(Element::Regular(77))
-            },
-            Element::Regular(_) => None,
-        }
+    fn add_explode_val(&mut self, _lr: LR) {
+        // TODO
     }
 
     fn split(&self) -> Option<()> {
@@ -137,13 +256,21 @@ fn main() {
     println!("{}", Snailfish::parse_str(&"[[3,4],2]"));
     println!("{}", Snailfish::parse_str(&"[1,[5,6]]"));
     println!("{}", Snailfish::parse_str(&"[[[[1,3],[5,3]],[[1,3],[8,7]]],[[[4,9],[6,9]],[[8,2],[7,3]]]]"));
-    // println!("{}", Snailfish::parse_str(&"1,2]"));
-    let snail_one = Snailfish::parse_str(&"[1,2]");
-    let snail_two = Snailfish::parse_str(&"[[3,4],5]");
-    let mut snail_one = Snailfish::add(snail_one, snail_two);
+    let mut snail_one = Snailfish::parse_str(&"[1,2]");
+    snail_one.add(Snailfish::parse_str(&"[[3,4],5]"));
     println!("{}", snail_one);
     snail_one.reduce();
     println!("{}", snail_one);
+
+    // explodes
+    let mut snail = Snailfish::parse_str(&"[[[[[9,8],1],2],3],4]");
+    snail.explode(1);
+    println!("{}", snail);
+    let mut snail = Snailfish::parse_str(&"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]");
+    snail.explode(1);
+    println!("{}", snail);
+    snail.explode(1);
+    println!("{}", snail);
 }
 
 #[cfg(test)]
