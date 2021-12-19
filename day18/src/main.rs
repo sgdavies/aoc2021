@@ -6,7 +6,7 @@ const SPLIT: u8 = 10;
 #[derive(Clone, Debug, PartialEq)]
 enum Element {
     Regular(u8),
-    Snailfish(Snailfish)
+    Snailfish(Snailfish),
 }
 
 impl Element {
@@ -27,7 +27,7 @@ enum LR {
 #[derive(Clone, Debug, PartialEq)]
 struct Snailfish {
     left: Box<Element>,
-    right: Box<Element>
+    right: Box<Element>,
 }
 
 impl Snailfish {
@@ -37,7 +37,7 @@ impl Snailfish {
         assert!(len == s.len());
         snail
     }
-    
+
     fn parse_sub_str(s: &str) -> (Snailfish, usize) {
         // Expect slice of form "[left,right]..."
         // Returns a snailfish and number of chars consumed
@@ -49,8 +49,8 @@ impl Snailfish {
             "[" => {
                 let (snail, len) = Snailfish::parse_sub_str(s);
                 (Element::Snailfish(snail), len)
-            },
-            _   => {
+            }
+            _ => {
                 let comma = s.find(',').unwrap();
                 let value = s[..comma].parse::<u8>().unwrap();
                 (Element::Regular(value), comma)
@@ -64,8 +64,8 @@ impl Snailfish {
             "[" => {
                 let (snail, len) = Snailfish::parse_sub_str(s);
                 (Element::Snailfish(snail), len)
-            },
-            _   => {
+            }
+            _ => {
                 let end_bracket = s.find(']').unwrap();
                 let value = s[..end_bracket].parse::<u8>().unwrap();
                 (Element::Regular(value), end_bracket)
@@ -73,8 +73,13 @@ impl Snailfish {
         };
 
         // +3 for "[" "," and "]"
-        (Snailfish { left: Box::new(left), right: Box::new(right) },
-         l_consumed + r_consumed + 3)
+        (
+            Snailfish {
+                left: Box::new(left),
+                right: Box::new(right),
+            },
+            l_consumed + r_consumed + 3,
+        )
     }
 
     fn add_and_reduce(&mut self, other: Snailfish) -> &mut Snailfish {
@@ -82,7 +87,7 @@ impl Snailfish {
         self.reduce();
         self
     }
-    
+
     fn add(&mut self, other: Snailfish) {
         self.left = Box::new(Element::Snailfish(self.clone()));
         self.right = Box::new(Element::Snailfish(other));
@@ -121,45 +126,45 @@ impl Snailfish {
                             self.left = Box::new(Element::Regular(0));
                             match &mut *self.right {
                                 Element::Regular(x) => {
-                                    self.right = Box::new(Element::Regular(*x+rval));
-                                },
+                                    self.right = Box::new(Element::Regular(*x + rval));
+                                }
                                 Element::Snailfish(rsnail) => {
                                     rsnail.add_explode_val(LR::Left(rval)); // Add the rval to the closest (leftmost) sub-element
-                                },
+                                }
                             };
-                            Some(LR::Left(lval))  // Parent needs to consume lval in closest on left (turn to R if passed down again)
+                            Some(LR::Left(lval)) // Parent needs to consume lval in closest on left (turn to R if passed down again)
                         } else {
                             None
                         }
-                    },
+                    }
                     _ => {
-                        match snail.explode(depth+1) {
+                        match snail.explode(depth + 1) {
                             None => None,
                             Some(LR::Neither) => {
                                 // something exploded, but all values have already been handled
                                 Some(LR::Neither)
-                            },
+                            }
                             Some(LR::Left(lval)) => {
                                 // it exploded; we need to handle a val up-left and return Some
                                 // We're already in the L-branch so we must pass the val up again
                                 Some(LR::Left(lval))
-                            },
+                            }
                             Some(LR::Right(rval)) => {
                                 // add the val to our right element. this must always succeed, so we return Neither
                                 match &mut *self.right {
                                     Element::Regular(x) => {
-                                        self.right = Box::new(Element::Regular(*x+rval));
-                                    },
+                                        self.right = Box::new(Element::Regular(*x + rval));
+                                    }
                                     Element::Snailfish(rsnail) => {
                                         rsnail.add_explode_val(LR::Left(rval)); // Note it needs to be applied in closest (l-most element)
-                                    },
+                                    }
                                 }
                                 Some(LR::Neither)
                             }
                         }
                     }
                 }
-            },
+            }
         };
 
         match l_explode {
@@ -178,45 +183,47 @@ impl Snailfish {
                                     self.right = Box::new(Element::Regular(0));
                                     match &mut *self.left {
                                         Element::Regular(x) => {
-                                            self.left = Box::new(Element::Regular(*x+lval));
-                                        },
+                                            self.left = Box::new(Element::Regular(*x + lval));
+                                        }
                                         Element::Snailfish(lsnail) => {
-                                            lsnail.add_explode_val(LR::Right(lval)); // Add the rval to the closest (leftmost) sub-element
-                                        },
+                                            lsnail.add_explode_val(LR::Right(lval));
+                                            // Add the rval to the closest (leftmost) sub-element
+                                        }
                                     };
-                                    Some(LR::Right(rval))  // Parent needs to consume lval in closest on left (turn to R if passed down again)
+                                    Some(LR::Right(rval)) // Parent needs to consume lval in closest on left (turn to R if passed down again)
                                 } else {
                                     None
                                 }
-                            },
+                            }
                             _ => {
-                                match snail.explode(depth+1) {
+                                match snail.explode(depth + 1) {
                                     None => None,
                                     Some(LR::Neither) => {
                                         // something exploded, but all values have already been handled
                                         Some(LR::Neither)
-                                    },
+                                    }
                                     Some(LR::Right(rval)) => {
                                         // it exploded; we need to handle a val up-right and return Some
                                         // We're already in the R-branch so we must pass the val up again
                                         Some(LR::Right(rval))
-                                    },
+                                    }
                                     Some(LR::Left(lval)) => {
                                         // add the val to our left element. this must always succeed, so we return Neither
                                         match &mut *self.left {
                                             Element::Regular(x) => {
-                                                self.left = Box::new(Element::Regular(*x+lval));
-                                            },
+                                                self.left = Box::new(Element::Regular(*x + lval));
+                                            }
                                             Element::Snailfish(lsnail) => {
-                                                lsnail.add_explode_val(LR::Right(lval)); // Note it needs to be applied in closest (l-most element)
-                                            },
+                                                lsnail.add_explode_val(LR::Right(lval));
+                                                // Note it needs to be applied in closest (l-most element)
+                                            }
                                         }
                                         Some(LR::Neither)
                                     }
                                 }
                             }
                         }
-                    },
+                    }
                 }
             }
         }
@@ -225,17 +232,13 @@ impl Snailfish {
     fn add_explode_val(&mut self, lr: LR) {
         // Go down and L/R until finding a Regular val to add to
         match lr {
-            LR::Left(val) => {
-                match &mut *self.left {
-                    Element::Regular(x) => self.left = Box::new(Element::Regular(*x+val)),
-                    Element::Snailfish(snail) => snail.add_explode_val(LR::Left(val)),
-                }
+            LR::Left(val) => match &mut *self.left {
+                Element::Regular(x) => self.left = Box::new(Element::Regular(*x + val)),
+                Element::Snailfish(snail) => snail.add_explode_val(LR::Left(val)),
             },
-            LR::Right(val) => {
-                match &mut *self.right {
-                    Element::Regular(x) => self.right = Box::new(Element::Regular(*x+val)),
-                    Element::Snailfish(snail) => snail.add_explode_val(LR::Right(val)),
-                }
+            LR::Right(val) => match &mut *self.right {
+                Element::Regular(x) => self.right = Box::new(Element::Regular(*x + val)),
+                Element::Snailfish(snail) => snail.add_explode_val(LR::Right(val)),
             },
             LR::Neither => panic!("Don't pass neither to this function!"),
         }
@@ -250,17 +253,15 @@ impl Snailfish {
                     let lval = val / 2;
                     let snail = Snailfish {
                         left: Box::new(Element::Regular(lval)),
-                        right: Box::new(Element::Regular(val - lval))
+                        right: Box::new(Element::Regular(val - lval)),
                     };
                     self.left = Box::new(Element::Snailfish(snail));
                     true
                 } else {
                     false
                 }
-            },
-            Element::Snailfish(snail) => {
-                snail.split()
             }
+            Element::Snailfish(snail) => snail.split(),
         };
 
         if l_split {
@@ -273,17 +274,15 @@ impl Snailfish {
                         let lval = val / 2;
                         let snail = Snailfish {
                             left: Box::new(Element::Regular(lval)),
-                            right: Box::new(Element::Regular(val - lval))
+                            right: Box::new(Element::Regular(val - lval)),
                         };
                         self.right = Box::new(Element::Snailfish(snail));
                         true
                     } else {
                         false
                     }
-                },
-                Element::Snailfish(snail) => {
-                    snail.split()
                 }
+                Element::Snailfish(snail) => snail.split(),
             }
         }
     }
@@ -323,9 +322,16 @@ fn main() {
     let mut max = 0;
     for i in 0..all_fish.len() {
         for j in 0..all_fish.len() {
-            if i==j { continue; }
-            let mag = all_fish[i].clone().add_and_reduce(all_fish[j].clone()).magnitude();
-            if mag > max { max = mag; }
+            if i == j {
+                continue;
+            }
+            let mag = all_fish[i]
+                .clone()
+                .add_and_reduce(all_fish[j].clone())
+                .magnitude();
+            if mag > max {
+                max = mag;
+            }
         }
     }
     println!("{}", max);
@@ -339,11 +345,27 @@ mod tests {
     fn test_magnitue() {
         assert_eq!(Snailfish::parse_str(&"[0,0]").magnitude(), 0);
         assert_eq!(Snailfish::parse_str(&"[[1,2],[[3,4],5]]").magnitude(), 143);
-        assert_eq!(Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[6,0]]],[8,1]]").magnitude(), 1384);
-        assert_eq!(Snailfish::parse_str(&"[[[[1,1],[2,2]],[3,3]],[4,4]]").magnitude(), 445);
-        assert_eq!(Snailfish::parse_str(&"[[[[3,0],[5,3]],[4,4]],[5,5]]").magnitude(), 791);
-        assert_eq!(Snailfish::parse_str(&"[[[[5,0],[7,4]],[5,5]],[6,6]]").magnitude(), 1137);
-        assert_eq!(Snailfish::parse_str(&"[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]").magnitude(), 3488);
+        assert_eq!(
+            Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[6,0]]],[8,1]]").magnitude(),
+            1384
+        );
+        assert_eq!(
+            Snailfish::parse_str(&"[[[[1,1],[2,2]],[3,3]],[4,4]]").magnitude(),
+            445
+        );
+        assert_eq!(
+            Snailfish::parse_str(&"[[[[3,0],[5,3]],[4,4]],[5,5]]").magnitude(),
+            791
+        );
+        assert_eq!(
+            Snailfish::parse_str(&"[[[[5,0],[7,4]],[5,5]],[6,6]]").magnitude(),
+            1137
+        );
+        assert_eq!(
+            Snailfish::parse_str(&"[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]")
+                .magnitude(),
+            3488
+        );
     }
 
     #[test]
@@ -358,18 +380,30 @@ mod tests {
 
         let mut snail = Snailfish::parse_str(&"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]");
         snail.explode(1);
-        assert_eq!(snail, Snailfish::parse_str(&"[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"));
+        assert_eq!(
+            snail,
+            Snailfish::parse_str(&"[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]")
+        );
         snail.explode(1);
-        assert_eq!(snail, Snailfish::parse_str(&"[[3,[2,[8,0]]],[9,[5,[7,0]]]]"));
+        assert_eq!(
+            snail,
+            Snailfish::parse_str(&"[[3,[2,[8,0]]],[9,[5,[7,0]]]]")
+        );
     }
 
     #[test]
     fn test_split() {
         let mut snail = Snailfish::parse_str(&"[[[[0,7],4],[15,[0,13]]],[1,1]]");
         snail.split();
-        assert_eq!(snail, Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[0,13]]],[1,1]]"));
+        assert_eq!(
+            snail,
+            Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[0,13]]],[1,1]]")
+        );
         snail.split();
-        assert_eq!(snail, Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]"));
+        assert_eq!(
+            snail,
+            Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]")
+        );
     }
 
     #[test]
@@ -377,9 +411,15 @@ mod tests {
         let mut snail = Snailfish::parse_str(&"[[[[4,3],4],4],[7,[[8,4],9]]]");
         let other = Snailfish::parse_str(&"[1,1]");
         snail.add_and_reduce(other);
-        assert_eq!(snail, Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"));
-        
-        assert_eq!(Snailfish::parse_str(&"[[[[4,3],4],4],[7,[[8,4],9]]]").add_and_reduce(Snailfish::parse_str(&"[1,1]")),
-               &Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"));
+        assert_eq!(
+            snail,
+            Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[6,0]]],[8,1]]")
+        );
+
+        assert_eq!(
+            Snailfish::parse_str(&"[[[[4,3],4],4],[7,[[8,4],9]]]")
+                .add_and_reduce(Snailfish::parse_str(&"[1,1]")),
+            &Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[6,0]]],[8,1]]")
+        );
     }
 }
