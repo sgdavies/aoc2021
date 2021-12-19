@@ -77,6 +77,11 @@ impl Snailfish {
         (Snailfish { left: Box::new(left), right: Box::new(right) },
          l_consumed + r_consumed + 3)
     }
+
+    fn add_and_reduce(&mut self, other: Snailfish) {
+        self.add(other);
+        self.reduce();
+    }
     
     fn add(&mut self, other: Snailfish) {
         self.left = Box::new(Element::Snailfish(self.clone()));
@@ -310,23 +315,31 @@ impl fmt::Display for Element {
 }
 
 fn main() {
-    println!("Hello, world!");
-    println!("{}", Snailfish::parse_str(&"[[[[1,3],[5,3]],[[1,3],[8,7]]],[[[4,9],[6,9]],[[8,2],[7,3]]]]"));
-    let mut snail_one = Snailfish::parse_str(&"[1,2]");
-    snail_one.add(Snailfish::parse_str(&"[[3,4],5]"));
-    println!("{}", snail_one);
-    snail_one.reduce();
-    println!("{}", snail_one);
+    // println!("Hello, world!");
+    // println!("{}", Snailfish::parse_str(&"[[[[1,3],[5,3]],[[1,3],[8,7]]],[[[4,9],[6,9]],[[8,2],[7,3]]]]"));
+    // let mut snail_one = Snailfish::parse_str(&"[1,2]");
+    // snail_one.add(Snailfish::parse_str(&"[[3,4],5]"));
+    // println!("{}", snail_one);
+    // snail_one.reduce();
+    // println!("{}", snail_one);
 
-    // explodes
-    let mut snail = Snailfish::parse_str(&"[[[[[9,8],1],2],3],4]");
-    snail.explode(1);
-    println!("{}", snail);
-    let mut snail = Snailfish::parse_str(&"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]");
-    snail.explode(1);
-    println!("{}", snail);
-    snail.explode(1);
-    println!("{}", snail);
+    // // explodes
+    // let mut snail = Snailfish::parse_str(&"[[[[[9,8],1],2],3],4]");
+    // snail.explode(1);
+    // println!("{}", snail);
+    // let mut snail = Snailfish::parse_str(&"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]");
+    // snail.explode(1);
+    // println!("{}", snail);
+    // snail.explode(1);
+    // println!("{}", snail);
+
+    let input = std::fs::read_to_string("18.dat").unwrap();
+    let mut lines = input.lines();
+    let mut snailfish = Snailfish::parse_str(lines.next().unwrap());
+    for line in lines {
+        snailfish.add_and_reduce(Snailfish::parse_str(line));
+    }
+    println!("{}", snailfish.magnitude());
 }
 
 #[cfg(test)]
@@ -368,5 +381,13 @@ mod tests {
         assert_eq!(snail, Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[0,13]]],[1,1]]"));
         snail.split();
         assert_eq!(snail, Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]"));
+    }
+
+    #[test]
+    fn test_add_reduce() {
+        let mut snail = Snailfish::parse_str(&"[[[[4,3],4],4],[7,[[8,4],9]]]");
+        let other = Snailfish::parse_str(&"[1,1]");
+        snail.add_and_reduce(other);
+        assert_eq!(snail, Snailfish::parse_str(&"[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"));
     }
 }
