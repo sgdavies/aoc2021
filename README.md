@@ -25,3 +25,6 @@ A series of hacky solutions to this year's Advent of Code (https://adventofcode.
 | Day 20 | `./20.py input steps` | python |
 | Day 21 | `./21.py` | python - fairly slow (~20s) |
 | Day 22 | `./22.py input` | python |
+| Day 23 | `./23_one.py` or `./23_two.py`| python - a bit hardcode-y so different versions for parts one and two |
+| Day 24 | | |
+| Day 25 | | |
