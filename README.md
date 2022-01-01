@@ -21,7 +21,7 @@ A series of hacky solutions to this year's Advent of Code (https://adventofcode.
 | Day 16 | | |
 | Day 17 | `./17.py` | python |
 | Day 18 | `cd day 18; cargo run` | Rust |
-| Day 19 | | |
+| Day 19 | `./19.py input` | ~50s |
 | Day 20 | `./20.py input steps` | python |
 | Day 21 | `./21.py` | python - fairly slow (~20s) |
 | Day 22 | `./22.py input` | python |

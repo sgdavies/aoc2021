@@ -14,7 +14,7 @@ MUST_MATCH = 12 # 12
 class Scanner:
     def __init__(self, id: int):
         self.id = id
-        self.solved = False
+        self.location = None
         self.beacons = set()
 
     def add_beacon(self, x, y, z):
@@ -69,13 +69,11 @@ for line in lines:
         scanner.add_beacon(x,y,z)
 scanners.append(scanner) # close out the last one
 
-scanners[0].solved = True
+scanners[0].location = (0,0,0)
 scanners_to_process = { scanners[0] }
 
 print(len(scanners))
-counts=[0,0,0,0,0]
 for _ in tqdm(scanners):
-    counts[0]+=1
     # It's a hack - but the bulk of the work here happens at most once per located scanner, 
     # and we expect to do that work for each scanner (except the last one, and others if we're lucky)
     if not scanners_to_process:
@@ -83,33 +81,22 @@ for _ in tqdm(scanners):
         break
 
     scanner_a = scanners_to_process.pop()
-    assert scanner_a.solved # otherwise it shouldn't be in the process list
+    assert scanner_a.location is not None # otherwise it shouldn't be in the process list
     # Attempt to fix all scanners which overlap with this solved one.
-    ##for scanner_b in tqdm(scanners):
     for scanner_b in scanners:
-        counts[1]+=1
-        if scanner_b == scanner_a or scanner_b.solved:
+        if scanner_b == scanner_a or scanner_b.location is not None:
             continue
 
         # We have a solved scanner A, and another, B, which may or may not overlap.
         for f in Scanner.orientation_funcs():
-            counts[2]+=1
             solved = False
             b_beacons = set(map(f, scanner_b.beacons))
-            #print(b_beacons)
             for beac_a in scanner_a.beacons: ## Could stop 12 before end?
-                counts[3]+=1
                 for beac_b in b_beacons:
-                    counts[4]+=1
                     # Assume beac_a is the same as beac_b and use that to fix the x,y,z offsets for B
                     # Then iterate over the others and see how many match up with A's beacons
                     (x,y,z) = (beac_a[0]-beac_b[0], beac_a[1]-beac_b[1], beac_a[2]-beac_b[2])
                     moved_beacons = set(map(lambda p: (p[0]+x,p[1]+y,p[2]+z), b_beacons))
-                    #if beac_a == (-618,-824,-621) and (-537,-823,-458) in moved_beacons:
-                    #    print("beac_a:", beac_a)
-                    #    print("beac_b:", beac_b)
-                    #    print(x,y,z)
-                    #    print(list(moved_beacons))
                         
                     if len(scanner_a.beacons.intersection(moved_beacons)) >= MUST_MATCH:
                         solved = True
@@ -120,12 +107,19 @@ for _ in tqdm(scanners):
 
         # We've tried up to all beacon-beacon combos at all orientations (or quit early with a solution)
         if solved:
-            print("Solved", scanner_a.id, scanner_b.id, "(",x,y,z,")")
+            #print("Solved", scanner_a.id, scanner_b.id, "(",x,y,z,")")
             scanner_b.beacons = moved_beacons
-            #print(scanner_b.beacons)
-            scanner_b.solved = True
+            scanner_b.location = (x,y,z)
             scanners_to_process.add(scanner_b)
 
-print(len(reduce(lambda acc, scanner: acc.union(scanner.beacons), scanners, set())))
-print(counts)
 print("Scanners:", len(scanners))
+print(len(reduce(lambda acc, scanner: acc.union(scanner.beacons), scanners, set())))
+from itertools import combinations
+max_manhattan = 0
+for (a,b) in combinations(scanners, 2):
+    manhattan = sum([abs(a.location[i]-b.location[i]) for i in range(3)]) 
+    if manhattan > max_manhattan:
+        max_manhattan = manhattan
+        pair = (a.id, b.id)
+
+print(pair, max_manhattan)
