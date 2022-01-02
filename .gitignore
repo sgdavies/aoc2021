@@ -2,3 +2,5 @@
 *.class
 13.bmp
 day18/target/*
+day16/obj/*
+day16/bin/*
