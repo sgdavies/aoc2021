@@ -12,13 +12,13 @@ A series of hacky solutions to this year's Advent of Code (https://adventofcode.
 | Day 07 | `python 07.py` | Warning - slow.  Inappropriate use of SAT solver. |
 | Day 08 | `./08.pl` (assumes `perl` exists in path) | Perl.  Regexes are fun! |
 | Day 09 | `python 09.py` | Nothing fancy today |
-| Day 10 | `./brainfuck.py 10.bf 10.dat` | Slow (~5 seconds).  For part two and discussion see `day10/README` |
+| Day 10 | `./brainfuck.py 10.bf 10.dat` | brainf#k : Slow (~5 seconds).  For part two and discussion see `day10/README` |
 | Day 11 | `./11.py 11.dat 100` | |
 | Day 12 | `./12.py` | |
 | Day 13 | `./13.py` | Now with improved OCR! (requires extra python libraries) |
 | Day 14 | `./14.py <input> <steps>` | Correctly suspected part two, and went for an efficient implementation first time 😺|
 | Day 15 | `./15.py <input>` | Not efficient - and slower for part two (~48s) |
-| Day 16 | `cd day16; dotnet run\ | C# |
+| Day 16 | `cd day16; dotnet run` | C# |
 | Day 17 | `./17.py` | python |
 | Day 18 | `cd day 18; cargo run` | Rust |
 | Day 19 | `./19.py input` | ~50s |
