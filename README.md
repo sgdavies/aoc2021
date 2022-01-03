@@ -27,4 +27,4 @@ A series of hacky solutions to this year's Advent of Code (https://adventofcode.
 | Day 22 | `./22.py input` | python |
 | Day 23 | `./23_one.py` or `./23_two.py`| python - a bit hardcode-y so different versions for parts one and two |
 | Day 24 | `./24.py` | Appropriate use of SAT solver 😁 |
-| Day 25 | | |
+| Day 25 | `./25.py input` | Merry Christmas! |
