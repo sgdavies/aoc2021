@@ -10,6 +10,7 @@ namespace Day16 {
 
             string input = "A20D790042F1274011955491808B802F1C60B20030327AF2CC248AA800E7CDD726F3D78F4966F571A300BA54D668E2519249265160803EA9DE562A1801204ACE53C954ACE53C94C659BDF318FD1366EF44D96EB11005FB39154E0068A7C3A6B379646C80348A0055E6642B332109B8D6F0F12980452C9D322B28012EC72D51B300426CF70017996DE6C2B2C70C01A04B67B9F9EC8DAFE679D0992A80380104065FA8012805BD380120051E380146006380142004A00E920034C0801CA007B0099420053007144016E28018800CCC8CBB5FE79A3D91E1DC9FB151A1006CC0188970D6109803B1D61344320042615C198C2A014C589D00943096B3CCC081009173D015B004C401C8E10421E8002110BA18C193004A52257E0094BCE1ABB94C2C9005112DFAA5E80292B405927020106BC01494DFA6E329BF4DD273B69E233DB04C435BEF7A0CC00CFCDF31DC6AD20A3002A498CC01D00042229479890200E4438A91700010F88F0EA251802D33FE976802538EF38E2401B84CA05004833529CD2A5BD9DDAC566009CC33E8024200CC528E71F40010A8DF0C61D8002B5076719A5D418034891895CFD320730F739A119CB2EA0072D25E870EA465E189FDC1126AF4B91100A03600A0803713E2FC7D00043A25C3B8A12F89D2E6440242489A7802400086C788FB09C0010C8BB132309005A1400D2CBE7E7F2F9F9F4BB83803B25286DFE628E129EBCB7483C8802F3D0A2542E3004AC0169BD944AFF263361F1B48010496089807100BA54A66675769B1787D230C621EF8B9007893F058A009AE4ED7A5BBDBE05262CEC0002FC7C20082622E0020D0D66A2D04021D5003ED3D396E19A1149054FCA3586BD00020129B0037300042E0CC1184C000874368F70A251D840239798AC8DC9A56F7C6C0E0728015294D9290030B226938A928D0";
             Console.WriteLine(Packet.ParsePacket(input).SumVersions());
+            Console.WriteLine(Packet.ParsePacket(input).Value());
         }
     }
 
@@ -34,23 +35,25 @@ namespace Day16 {
         }
 
         public abstract int SumVersions();
+        public abstract long Value();
     }
 
     class LiteralPacket: Packet {
-        private int _value;
-        public int Value { get { return _value; } }
+        private long _value;
+        public override long Value() { return (long)_value; }
 
         public LiteralPacket(int version, Bitreader bits) {
             Version = version;
             TypeId = 4; 
 
-            int val = 0;
+            long val = 0;
             var last_group = false;
             while (!last_group) {
                 last_group = (bits.take(1) == 0);
                 val <<= 4;
                 val += bits.take(4);
             }
+            Debug.Assert(val >= 0); // Verifies we haven't overrun the int size
             _value = val;
         }
 
@@ -84,6 +87,28 @@ namespace Day16 {
 
         public override int SumVersions() {
             return Version + _subPackets.Sum(p => p.SumVersions());
+        }
+
+        public override long Value() {
+            switch (TypeId) {
+                case 0: // Sum packet
+                    return _subPackets.Sum(p => p.Value());
+                case 1: // Product packet
+                    return _subPackets.Aggregate((long)1, (acc, p) => acc * p.Value());
+                case 2: // Minimum
+                    return _subPackets.Select(p => p.Value()).Min();
+                case 3: // Max
+                    return _subPackets.Select(p => p.Value()).Max();
+                case 5: // Greater Than
+                    return _subPackets[0].Value() > _subPackets[1].Value() ? 1 : 0;
+                case 6: // Less Than
+                    return _subPackets[0].Value() < _subPackets[1].Value() ? 1 : 0;
+                case 7: // Equal
+                    return _subPackets[0].Value() == _subPackets[1].Value() ? 1 : 0;
+                default:
+                    Debug.Assert(false, $"Invalid TypeId: {TypeId}");
+                    return -1;
+            } 
         }
     }
 
@@ -151,6 +176,7 @@ namespace Day16 {
             TestLiteralPacket();
             TestOperatorPacket();
             TestVersionSums();
+            TestValues();
             Console.WriteLine("...all passed");
         }
 
@@ -197,7 +223,7 @@ namespace Day16 {
             var lit = (LiteralPacket) Packet.ParsePacket(new Bitreader("D2FE28"));
             Debug.Assert(lit.Version == 6);
             Debug.Assert(lit.TypeId == 4);
-            Debug.Assert(lit.Value == 2021);
+            Debug.Assert(lit.Value() == 2021);
             Console.WriteLine("passed");
         }
 
@@ -216,6 +242,19 @@ namespace Day16 {
             Debug.Assert(Packet.ParsePacket("620080001611562C8802118E34").SumVersions() == 12);
             Debug.Assert(Packet.ParsePacket("C0015000016115A2E0802F182340").SumVersions() == 23);
             Debug.Assert(Packet.ParsePacket("A0016C880162017C3686B18A3D4780").SumVersions() == 31);
+            Console.WriteLine("passed");
+        }
+
+        static void TestValues() {
+            Console.Write("TestValues: ");
+            Debug.Assert(Packet.ParsePacket("C200B40A82").Value() == 3); // Sum
+            Debug.Assert(Packet.ParsePacket("04005AC33890").Value() == 54); // Product
+            Debug.Assert(Packet.ParsePacket("880086C3E88112").Value() == 7); // Min
+            Debug.Assert(Packet.ParsePacket("CE00C43D881120").Value() == 9); // Max
+            Debug.Assert(Packet.ParsePacket("D8005AC2A8F0").Value() == 1); // LT
+            Debug.Assert(Packet.ParsePacket("F600BC2D8F").Value() == 0); // GT
+            Debug.Assert(Packet.ParsePacket("9C005AC2F8F0").Value() == 0); // EQ
+            Debug.Assert(Packet.ParsePacket("9C0141080250320F1802104A08").Value() == 1); // 1+3==2*2
             Console.WriteLine("passed");
         }
     }
