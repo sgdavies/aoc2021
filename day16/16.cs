@@ -15,7 +15,7 @@ public class Day16 {
     }
 }
 
-internal abstract class Packet {
+abstract internal class Packet {
     private const int LITERAL = 4;
     public int Version { get; protected set; }
     public int TypeId { get; protected set; }
