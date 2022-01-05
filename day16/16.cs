@@ -62,7 +62,7 @@ internal class LiteralPacket: Packet {
 }
 
 internal class OperatorPacket: Packet {
-    private readonly List<Packet> _subPackets = new List<Packet>();
+    private readonly List<Packet> _subPackets = new();
     public int NPackets { get { return _subPackets.Count; }}
 
     public OperatorPacket(int version, int type_id, Bitreader bits) {
@@ -114,7 +114,7 @@ internal class OperatorPacket: Packet {
 }
 
 internal class Bitreader {
-    private readonly Queue<byte> _vals = new Queue<byte>();
+    private readonly Queue<byte> _vals = new();
 
     public int Remaining { get { return _vals.Count; } }
 
@@ -124,7 +124,7 @@ internal class Bitreader {
         }
     }
 
-    private static readonly Dictionary<char, byte[]> hexToBytes = new Dictionary<char, byte[]>() {
+    private static readonly Dictionary<char, byte[]> hexToBytes = new() {
             {'0', new byte[] {0,0,0,0}},
             {'1', new byte[] {0,0,0,1}},
             {'2', new byte[] {0,0,1,0}},
