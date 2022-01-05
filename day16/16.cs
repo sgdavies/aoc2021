@@ -15,7 +15,7 @@ public class Day16 {
     }
 }
 
-abstract class Packet {
+internal abstract class Packet {
     private const int LITERAL = 4;
     public int Version { get; protected set; }
     public int TypeId { get; protected set; }
@@ -39,7 +39,7 @@ abstract class Packet {
     public abstract long Value();
 }
 
-class LiteralPacket: Packet {
+internal class LiteralPacket: Packet {
     private readonly long _value;
     public override long Value() { return (long)_value; }
 
@@ -61,7 +61,7 @@ class LiteralPacket: Packet {
     public override int SumVersions() { return Version; }
 }
 
-class OperatorPacket: Packet {
+internal class OperatorPacket: Packet {
     private readonly List<Packet> _subPackets = new List<Packet>();
     public int NPackets { get { return _subPackets.Count; }}
 
@@ -113,8 +113,8 @@ class OperatorPacket: Packet {
     }
 }
 
-class Bitreader {
-    readonly Queue<byte> _vals = new Queue<byte>();
+internal class Bitreader {
+    private readonly Queue<byte> _vals = new Queue<byte>();
 
     public int Remaining { get { return _vals.Count; } }
 
@@ -124,7 +124,7 @@ class Bitreader {
         }
     }
 
-    static readonly Dictionary<char, byte[]> hexToBytes = new Dictionary<char, byte[]>() {
+    private static readonly Dictionary<char, byte[]> hexToBytes = new Dictionary<char, byte[]>() {
             {'0', new byte[] {0,0,0,0}},
             {'1', new byte[] {0,0,0,1}},
             {'2', new byte[] {0,0,1,0}},
@@ -181,12 +181,12 @@ public class Tests {
         Console.WriteLine("...all passed");
     }
 
-    static void TestTemplate() {
+    private static void TestTemplate() {
         Console.Write(": ");
         Console.WriteLine("passed");
     }
 
-    static void BrTestFromBytes() {
+    private static void BrTestFromBytes() {
         Console.Write("Bitreader TestFromBytes: ");
         var br = new Bitreader(new byte[] {1,1,0,0,1});
         Debug.Assert(br.Remaining == 5);
@@ -197,7 +197,7 @@ public class Tests {
         Console.WriteLine("passed");
     }
 
-    static void BrTestFromHex() {
+    private static void BrTestFromHex() {
         Console.Write("Bitreader TestFromHex: ");
         var br = new Bitreader("D2FE28");
         Debug.Assert(br.take(3) == 6);
@@ -210,7 +210,7 @@ public class Tests {
         Console.WriteLine("passed");
     }
 
-    static void BrTestFromBr() {
+    private static void BrTestFromBr() {
         Console.Write("BrTestFromBr: ");
         var br1 = new Bitreader("F5");
         var br2 = new Bitreader(br1, 4);
@@ -219,7 +219,7 @@ public class Tests {
         Console.WriteLine("passed");
     }
 
-    static void TestLiteralPacket() {
+    private static void TestLiteralPacket() {
         Console.Write("TestLiteralPacket: ");
         var lit = (LiteralPacket) Packet.ParsePacket(new Bitreader("D2FE28"));
         Debug.Assert(lit.Version == 6);
@@ -228,7 +228,7 @@ public class Tests {
         Console.WriteLine("passed");
     }
 
-    static void TestOperatorPacket() {
+    private static void TestOperatorPacket() {
         Console.Write("TestOperatorPacket: ");
         var lit_one = (OperatorPacket) Packet.ParsePacket(new Bitreader("38006F45291200"));
         Debug.Assert(lit_one.NPackets == 2);
@@ -237,7 +237,7 @@ public class Tests {
         Console.WriteLine("passed");
     }
 
-    static void TestVersionSums() {
+    private static void TestVersionSums() {
         Console.Write("TestVersionSums: ");
         Debug.Assert(Packet.ParsePacket("8A004A801A8002F478").SumVersions() == 16);
         Debug.Assert(Packet.ParsePacket("620080001611562C8802118E34").SumVersions() == 12);
@@ -246,7 +246,7 @@ public class Tests {
         Console.WriteLine("passed");
     }
 
-    static void TestValues() {
+    private static void TestValues() {
         Console.Write("TestValues: ");
         Debug.Assert(Packet.ParsePacket("C200B40A82").Value() == 3); // Sum
         Debug.Assert(Packet.ParsePacket("04005AC33890").Value() == 54); // Product
