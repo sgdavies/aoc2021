@@ -41,7 +41,7 @@ abstract internal class Packet {
 
 internal class LiteralPacket: Packet {
     private readonly long _value;
-    public override long Value() { return (long)_value; }
+    public override long Value() => _value;
 
     public LiteralPacket(int version, Bitreader bits) {
         Version = version;
@@ -58,12 +58,12 @@ internal class LiteralPacket: Packet {
         _value = val;
     }
 
-    public override int SumVersions() { return Version; }
+    public override int SumVersions() => Version;
 }
 
 internal class OperatorPacket: Packet {
     private readonly List<Packet> _subPackets = new();
-    public int NPackets { get { return _subPackets.Count; }}
+    public int NPackets => _subPackets.Count;
 
     public OperatorPacket(int version, int type_id, Bitreader bits) {
         Version = version;
@@ -86,9 +86,7 @@ internal class OperatorPacket: Packet {
         }
     }
 
-    public override int SumVersions() {
-        return Version + _subPackets.Sum(p => p.SumVersions());
-    }
+    public override int SumVersions() => Version + _subPackets.Sum(p => p.SumVersions());
 
     public override long Value() => TypeId switch
     {
@@ -113,7 +111,7 @@ internal class OperatorPacket: Packet {
 internal class Bitreader {
     private readonly Queue<byte> _vals = new();
 
-    public int Remaining { get { return _vals.Count; } }
+    public int Remaining => _vals.Count;
 
     public Bitreader(byte[] bytes) {
         foreach (var b in bytes) {
