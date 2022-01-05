@@ -90,27 +90,24 @@ internal class OperatorPacket: Packet {
         return Version + _subPackets.Sum(p => p.SumVersions());
     }
 
-    public override long Value() {
-        switch (TypeId) {
-            case 0: // Sum packet
-                return _subPackets.Sum(p => p.Value());
-            case 1: // Product packet
-                return _subPackets.Aggregate((long)1, (acc, p) => acc * p.Value());
-            case 2: // Minimum
-                return _subPackets.Select(p => p.Value()).Min();
-            case 3: // Max
-                return _subPackets.Select(p => p.Value()).Max();
-            case 5: // Greater Than
-                return _subPackets[0].Value() > _subPackets[1].Value() ? 1 : 0;
-            case 6: // Less Than
-                return _subPackets[0].Value() < _subPackets[1].Value() ? 1 : 0;
-            case 7: // Equal
-                return _subPackets[0].Value() == _subPackets[1].Value() ? 1 : 0;
-            default:
-                Debug.Assert(false, $"Invalid TypeId: {TypeId}");
-                return -1;
-        } 
-    }
+    public override long Value() => TypeId switch
+    {
+        // Sum packet
+        0 => _subPackets.Sum(p => p.Value()),
+        // Product packet
+        1 => _subPackets.Aggregate((long) 1, (acc, p) => acc * p.Value()),
+        // Minimum
+        2 => _subPackets.Select(p => p.Value()).Min(),
+        // Max
+        3 => _subPackets.Select(p => p.Value()).Max(),
+        // Greater Than
+        5 => _subPackets[0].Value() > _subPackets[1].Value() ? 1 : 0,
+        // Less Than
+        6 => _subPackets[0].Value() < _subPackets[1].Value() ? 1 : 0,
+        // Equal
+        7 => _subPackets[0].Value() == _subPackets[1].Value() ? 1 : 0,
+        _ => -1, //Debug.Assert(false, $"Invalid TypeId: {TypeId}");
+    };
 }
 
 internal class Bitreader {
