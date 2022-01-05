@@ -25,8 +25,8 @@ internal abstract class Packet {
     }
 
     public static Packet ParsePacket(Bitreader br) {
-        var version = br.take(3);
-        var type_id = br.take(3);
+        var version = br.Take(3);
+        var type_id = br.Take(3);
 
         if (type_id == LITERAL) {
             return new LiteralPacket(version, br);
@@ -50,9 +50,9 @@ internal class LiteralPacket: Packet {
         long val = 0;
         var last_group = false;
         while (!last_group) {
-            last_group = (bits.take(1) == 0);
+            last_group = (bits.Take(1) == 0);
             val <<= 4;
-            val += bits.take(4);
+            val += bits.Take(4);
         }
         Debug.Assert(val >= 0); // Verifies we haven't overrun the int size
         _value = val;
@@ -69,17 +69,17 @@ internal class OperatorPacket: Packet {
         Version = version;
         TypeId = type_id;
 
-        if (bits.take(1) == 0) {
+        if (bits.Take(1) == 0) {
             // The next 15 bits are a number showing remaining length in bits
-            var bit_len = bits.take(15);
+            var bit_len = bits.Take(15);
             var new_br = new Bitreader(bits, bit_len);
             while (new_br.Remaining > 6) {  // Slight hack to ignore remaining 0-pads (a valid packet will always have at least the version & type headers)
                 _subPackets.Add(Packet.ParsePacket(new_br));
             }
-            Debug.Assert(new_br.take(new_br.Remaining) == 0);
+            Debug.Assert(new_br.Take(new_br.Remaining) == 0);
         } else {
             // The next 11 bits say how many packets are in this packet
-            var n_packets = bits.take(11);
+            var n_packets = bits.Take(11);
             for (var _i=0; _i<n_packets; _i++) {
                 _subPackets.Add(Packet.ParsePacket(bits));
             }
@@ -154,11 +154,11 @@ internal class Bitreader {
     public Bitreader(Bitreader br, int n) {
         // Return a new bitreader created from the first n bits of this one
         for (var i=0; i<n; i++) {
-            _vals.Enqueue((byte)br.take(1));
+            _vals.Enqueue((byte)br.Take(1));
         }
     }
 
-    public int take(int n) {
+    public int Take(int n) {
         var val = 0;
         for (var i=0; i<n; i++) {
             val <<= 1;
@@ -190,9 +190,9 @@ public class Tests {
         Console.Write("Bitreader TestFromBytes: ");
         var br = new Bitreader(new byte[] {1,1,0,0,1});
         Debug.Assert(br.Remaining == 5);
-        Debug.Assert(br.take(3) == 6);
+        Debug.Assert(br.Take(3) == 6);
         Debug.Assert(br.Remaining == 2);
-        Debug.Assert(br.take(2) == 1);
+        Debug.Assert(br.Take(2) == 1);
         Debug.Assert(br.Remaining == 0);
         Console.WriteLine("passed");
     }
@@ -200,12 +200,12 @@ public class Tests {
     private static void BrTestFromHex() {
         Console.Write("Bitreader TestFromHex: ");
         var br = new Bitreader("D2FE28");
-        Debug.Assert(br.take(3) == 6);
-        Debug.Assert(br.take(3) == 4);
-        Debug.Assert(br.take(5) == 23); // 1,0,1,1,1
-        Debug.Assert(br.take(5) == 30); // 1,1,1,1,0
-        Debug.Assert(br.take(5) == 5); // 0,0,1,0,1
-        Debug.Assert(br.take(3) == 0);
+        Debug.Assert(br.Take(3) == 6);
+        Debug.Assert(br.Take(3) == 4);
+        Debug.Assert(br.Take(5) == 23); // 1,0,1,1,1
+        Debug.Assert(br.Take(5) == 30); // 1,1,1,1,0
+        Debug.Assert(br.Take(5) == 5); // 0,0,1,0,1
+        Debug.Assert(br.Take(3) == 0);
         Debug.Assert(br.Remaining == 0);
         Console.WriteLine("passed");
     }
@@ -214,8 +214,8 @@ public class Tests {
         Console.Write("BrTestFromBr: ");
         var br1 = new Bitreader("F5");
         var br2 = new Bitreader(br1, 4);
-        Debug.Assert(br2.take(4) == 15);
-        Debug.Assert(br1.take(4) == 5);
+        Debug.Assert(br2.Take(4) == 15);
+        Debug.Assert(br1.Take(4) == 5);
         Console.WriteLine("passed");
     }
 
