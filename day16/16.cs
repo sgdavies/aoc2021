@@ -40,7 +40,7 @@ abstract class Packet {
 }
 
 class LiteralPacket: Packet {
-    private long _value;
+    private readonly long _value;
     public override long Value() { return (long)_value; }
 
     public LiteralPacket(int version, Bitreader bits) {
@@ -62,7 +62,7 @@ class LiteralPacket: Packet {
 }
 
 class OperatorPacket: Packet {
-    private List<Packet> _subPackets = new List<Packet>();
+    private readonly List<Packet> _subPackets = new List<Packet>();
     public int NPackets { get { return _subPackets.Count; }}
 
     public OperatorPacket(int version, int type_id, Bitreader bits) {
@@ -114,7 +114,7 @@ class OperatorPacket: Packet {
 }
 
 class Bitreader {
-    Queue<byte> _vals = new Queue<byte>();
+    readonly Queue<byte> _vals = new Queue<byte>();
 
     public int Remaining { get { return _vals.Count; } }
 
@@ -124,7 +124,7 @@ class Bitreader {
         }
     }
 
-    static Dictionary<char, byte[]> hexToBytes = new Dictionary<char, byte[]>() {
+    static readonly Dictionary<char, byte[]> hexToBytes = new Dictionary<char, byte[]>() {
             {'0', new byte[] {0,0,0,0}},
             {'1', new byte[] {0,0,0,1}},
             {'2', new byte[] {0,0,1,0}},
